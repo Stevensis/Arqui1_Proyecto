@@ -4,7 +4,7 @@
 #include <String.h>
 #include <Servo.h>
 #include <Stepper.h>
-
+//
 #define BT2 19
 #define BT1 18
 //#define MT1 12
@@ -12,6 +12,7 @@
 #define LB1 10
 #define LB2 9
 //#define SV 13
+#define TMP A0
 
 Stepper ST1(12, 28, 29, 30, 31);
 Servo servo;
@@ -160,8 +161,6 @@ void setup() {
   pinMode(A4, OUTPUT); //luces entrada
   pinMode(A5, OUTPUT); //luces salida
 
-
-
   pinMode(A8, OUTPUT); //clave correcta led amarillo
   pinMode(A9, OUTPUT); //clave correcta led rojo
   pinMode(A10, OUTPUT); //clave correcta led verde nuevo usuario
@@ -178,6 +177,8 @@ void setup() {
   servo.write(0);
   ST1.setSpeed(450);
 
+  //temperatura
+  pinMode(TMP, INPUT);
   /*  //movimiento servo motor proteus
   void simuladorServo(){
     analogWrite(PwmI,0);
@@ -205,6 +206,7 @@ void loop() {
 
     case 1:
       mensaje_session();
+      Serial.println("pto el que lo lea jeje");
       opcion_actual = 2;
       break;
     
@@ -220,6 +222,30 @@ void loop() {
         tipoMovimiento('a');
       }else if(state == 'B'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
         tipoMovimiento('b');
+      }else if(state == 'C'){//Bluetooth activa el porton de la salida
+        simuladorServo();
+      }else if(state == 'E'){//Bluetooth desactiva leds de salida
+        temperatura();
+      }else if(state == '0'){//Bluetooth activa todos los leds
+        manejoLeds(0);
+      }else if(state == '1'){//Bluetooth desactiva todos los leds
+        manejoLeds(1);
+      }else if(state == '2'){//Bluetooth activa leds de lab 1
+        manejoLeds(2);
+      }else if(state == '3'){//Bluetooth desactiva leds de lab 1
+        manejoLeds(3);
+      }else if(state == '4'){//Bluetooth activa leds de lab 2
+        manejoLeds(4);
+      }else if(state == '5'){//Bluetooth desactiva leds de lab 2
+        manejoLeds(5);
+      }else if(state == '6'){//Bluetooth activa leds de entrada
+        manejoLeds(6);
+      }else if(state == '7'){//Bluetooth desactiva leds de entrada
+        manejoLeds(7);
+      }else if(state == '8'){//Bluetooth activa leds de salida
+        manejoLeds(8);
+      }else if(state == '9'){//Bluetooth desactiva leds de salida
+        manejoLeds(9);
       }
 
       /*//Prueba bluetooth
@@ -235,62 +261,190 @@ void loop() {
   }
 }
 
+void temperatura(){
+  float val = analogRead(TMP);
+  Serial.println(val);
+  float mv = (val/1000)*5000;
+  float temp = (mv/10)-1;
+
+  Serial.println(temp);
+}
+
+void manejoLeds(int i){
+  switch(i){
+    case 0:
+      digitalWrite(A2, HIGH);//lab1
+      digitalWrite(A3, HIGH);//lab2
+      digitalWrite(A4, HIGH);//entrada
+      digitalWrite(A5, HIGH);//salida
+      break;
+
+    case 1:
+      digitalWrite(A2, LOW);
+      digitalWrite(A3, LOW);
+      digitalWrite(A4, LOW);
+      digitalWrite(A5, LOW);
+      break;
+
+    case 2:
+      digitalWrite(A2, HIGH);//lab1
+      break;
+
+    case 3:
+      digitalWrite(A2, LOW);
+      break;
+
+    case 4:
+      digitalWrite(A3, HIGH);//lab2
+      break;
+
+    case 5:
+      digitalWrite(A3, LOW);
+      break;
+
+    case 6:
+      digitalWrite(A4, HIGH);//entrada
+      break;
+
+    case 7:
+      digitalWrite(A4, LOW);
+      break;
+
+    case 8:
+      digitalWrite(A5, HIGH);//salida
+      break;
+
+    case 9:
+      digitalWrite(A5, LOW);
+      break;
+  }
+}
+
+void simuladorServo(){
+  //imprime objeto candado cerrado 0 abierto 1 cheque 2 cara 3
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.write((byte)2);
+  lcd.print("&ControlPorton&");
+  lcd.setCursor(2, 1);
+  lcd.write((byte)1);
+  lcd.write((byte)3);
+  lcd.print("Abriendo");
+  lcd.write((byte)3);
+
+  servo.write(180);
+  delay(5000);
+
+  int state;
+
+  if(Serial.available() > 0){
+    state = Serial.read();
+  }
+  
+  double primero = millis();
+  double segundo = 0;
+  Serial.println("comienza");
+  while(state != 'D' && segundo < 6){
+    if(Serial.available() > 0){
+      state = Serial.read();
+    }
+
+    segundo = millis();
+    segundo = (segundo - primero)/1000;
+  }
+  digitalWrite(A8,HIGH);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.write((byte)2);
+  lcd.print("&ControlPorton&");
+  lcd.setCursor(2, 1);
+  lcd.write((byte)0);
+  lcd.write((byte)3);
+  lcd.print("Cerrando");
+  lcd.write((byte)3);
+  
+  servo.write(0);
+  
+  tone(buzzer, 2000);
+  delay(1000);
+  noTone(buzzer);
+
+  delay(5000);
+  digitalWrite(A8,LOW);
+  
+  opcion_actual = 1;
+}
+
 void tipoMovimiento(char tipo){
-  if(tipo == 'a'){
-    if(digitalRead(LB1) == HIGH){
-      /*digitalWrite(buzzer, HIGH);
-      delay(3000);
-      digitalWrite(buzzer, LOW);*/
+  if(tipo == 'a'){//Bluetooth activa si Lab 1 encendido -> mueve banda a izquierda (abajo)
+    if(digitalRead(LB1) == HIGH){//Verifica que haya paquete en banda
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Moviendo hacia");
+      lcd.setCursor(0, 1);
+      lcd.print("izquierda");
+      
       tone(buzzer, 1000);
       delay(1000);
       noTone(buzzer);
       
-      lcd.clear();
-      lcd.print("Moviendo hacia");
-      lcd.setCursor(0, 2);
-      lcd.print("izquierda");
-      
       moverBanda(-1);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("La muestra llego");
+      lcd.setCursor(0, 1);
+      lcd.print("al LAB2");
 
       tone(buzzer, 1500);
       delay(500);
       noTone(buzzer);
-    }else{
+      
+    }else{//Si no hay paquete tira error
       lcd.clear();
-      lcd.setCursor(1, 0);
+      lcd.setCursor(0, 0);
       lcd.print("ERROR: no hay");
-      lcd.setCursor(0, 2);
+      lcd.setCursor(0, 1);
       lcd.print("muestra en LAB1");
       delay(2000);
     }
     
-  }else if(tipo == 'b'){
-    if(digitalRead(LB2) == HIGH){
+  }else if(tipo == 'b'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
+    if(digitalRead(LB2) == HIGH){//Verifica que haya paquete en banda
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Moviendo hacia");
+      lcd.setCursor(0, 1);
+      lcd.print("derechas");
+      
       tone(buzzer, 3000);
       delay(500);
       noTone(buzzer);
       
-      lcd.clear();
-      lcd.print("Moviendo hacia");
-      lcd.setCursor(0, 2);
-      lcd.print("derechas");
-      
       moverBanda(1);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("La muestra llego");
+      lcd.setCursor(0, 1);
+      lcd.print("al LAB1");
 
       tone(buzzer, 2500);
       delay(500);
       noTone(buzzer);
-    }else{
+
+    }else{//Si no hay paquete tira error
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("ERROR: no hay ");
-      lcd.setCursor(0, 2);
+      lcd.setCursor(0, 1);
       lcd.print("muestra en LAB2");
       delay(2000);
     }
     
   }
-  opcion_actual = 1;
+  opcion_actual = 2;
   
 }
 
