@@ -206,7 +206,7 @@ void loop() {
 
     case 1:
       mensaje_session();
-      Serial.println("pto el que lo lea jeje");
+   //   Serial.println("pto el que lo lea jeje");
       opcion_actual = 2;
       break;
     
@@ -262,12 +262,16 @@ void loop() {
 }
 
 void temperatura(){
+  Serial.flush();
   float val = analogRead(TMP);
-  Serial.println(val);
+ // Serial.println(val);
   float mv = (val/1000)*5000;
   float temp = (mv/10)-1;
-
-  Serial.println(temp);
+  delay(1);
+  
+  Serial.print(temp);
+ 
+  
 }
 
 void manejoLeds(int i){
@@ -344,7 +348,7 @@ void simuladorServo(){
   
   double primero = millis();
   double segundo = 0;
-  Serial.println("comienza");
+  //Serial.println("comienza");
   while(state != 'D' && segundo < 6){
     if(Serial.available() > 0){
       state = Serial.read();
