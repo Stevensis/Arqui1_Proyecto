@@ -205,6 +205,7 @@ void loop() {
 
     case 1:
       mensaje_session();
+      Serial.println("pto el que lo lea jeje");
       opcion_actual = 2;
       break;
     
@@ -220,6 +221,8 @@ void loop() {
         tipoMovimiento('a');
       }else if(state == 'B'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
         tipoMovimiento('b');
+      }else if(state == 'C'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
+        simuladorServo();
       }
 
       /*//Prueba bluetooth
@@ -235,62 +238,131 @@ void loop() {
   }
 }
 
+void simuladorServo(){
+  //imprime objeto candado cerrado 0 abierto 1 cheque 2 cara 3
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.write((byte)2);
+  lcd.print("&ControlPorton&");
+  lcd.setCursor(2, 1);
+  lcd.write((byte)1);
+  lcd.write((byte)3);
+  lcd.print("Abriendo");
+  lcd.write((byte)3);
+
+  servo.write(180);
+  delay(5000);
+
+  int state;
+
+  if(Serial.available() > 0){
+    state = Serial.read();
+  }
+  
+  double primero = millis();
+  double segundo = 0;
+  Serial.println("comienza");
+  while(state != 'D' && segundo < 6){
+    if(Serial.available() > 0){
+      state = Serial.read();
+    }
+
+    segundo = millis();
+    segundo = (segundo - primero)/1000;
+  }
+  digitalWrite(A8,HIGH);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.write((byte)2);
+  lcd.print("&ControlPorton&");
+  lcd.setCursor(2, 1);
+  lcd.write((byte)0);
+  lcd.write((byte)3);
+  lcd.print("Cerrando");
+  lcd.write((byte)3);
+  
+  servo.write(0);
+  
+  tone(buzzer, 2000);
+  delay(1000);
+  noTone(buzzer);
+
+  delay(5000);
+  digitalWrite(A8,LOW);
+  
+  opcion_actual = 1;
+}
+
 void tipoMovimiento(char tipo){
-  if(tipo == 'a'){
-    if(digitalRead(LB1) == HIGH){
-      /*digitalWrite(buzzer, HIGH);
-      delay(3000);
-      digitalWrite(buzzer, LOW);*/
+  if(tipo == 'a'){//Bluetooth activa si Lab 1 encendido -> mueve banda a izquierda (abajo)
+    if(digitalRead(LB1) == HIGH){//Verifica que haya paquete en banda
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Moviendo hacia");
+      lcd.setCursor(0, 1);
+      lcd.print("izquierda");
+      
       tone(buzzer, 1000);
       delay(1000);
       noTone(buzzer);
       
-      lcd.clear();
-      lcd.print("Moviendo hacia");
-      lcd.setCursor(0, 2);
-      lcd.print("izquierda");
-      
       moverBanda(-1);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("La muestra llego");
+      lcd.setCursor(0, 1);
+      lcd.print("al LAB2");
 
       tone(buzzer, 1500);
       delay(500);
       noTone(buzzer);
-    }else{
+      
+    }else{//Si no hay paquete tira error
       lcd.clear();
-      lcd.setCursor(1, 0);
+      lcd.setCursor(0, 0);
       lcd.print("ERROR: no hay");
-      lcd.setCursor(0, 2);
+      lcd.setCursor(0, 1);
       lcd.print("muestra en LAB1");
       delay(2000);
     }
     
-  }else if(tipo == 'b'){
-    if(digitalRead(LB2) == HIGH){
+  }else if(tipo == 'b'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
+    if(digitalRead(LB2) == HIGH){//Verifica que haya paquete en banda
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Moviendo hacia");
+      lcd.setCursor(0, 1);
+      lcd.print("derechas");
+      
       tone(buzzer, 3000);
       delay(500);
       noTone(buzzer);
       
-      lcd.clear();
-      lcd.print("Moviendo hacia");
-      lcd.setCursor(0, 2);
-      lcd.print("derechas");
-      
       moverBanda(1);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("La muestra llego");
+      lcd.setCursor(0, 1);
+      lcd.print("al LAB1");
 
       tone(buzzer, 2500);
       delay(500);
       noTone(buzzer);
-    }else{
+
+    }else{//Si no hay paquete tira error
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("ERROR: no hay ");
-      lcd.setCursor(0, 2);
+      lcd.setCursor(0, 1);
       lcd.print("muestra en LAB2");
       delay(2000);
     }
     
   }
-  opcion_actual = 1;
+  opcion_actual = 2;
   
 }
 
