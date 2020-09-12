@@ -12,6 +12,7 @@
 #define LB1 10
 #define LB2 9
 //#define SV 13
+#define TMP A0
 
 Stepper ST1(12, 28, 29, 30, 31);
 Servo servo;
@@ -160,8 +161,6 @@ void setup() {
   pinMode(A4, OUTPUT); //luces entrada
   pinMode(A5, OUTPUT); //luces salida
 
-
-
   pinMode(A8, OUTPUT); //clave correcta led amarillo
   pinMode(A9, OUTPUT); //clave correcta led rojo
   pinMode(A10, OUTPUT); //clave correcta led verde nuevo usuario
@@ -178,6 +177,8 @@ void setup() {
   servo.write(0);
   ST1.setSpeed(450);
 
+  //temperatura
+  pinMode(TMP, INPUT);
   /*  //movimiento servo motor proteus
   void simuladorServo(){
     analogWrite(PwmI,0);
@@ -221,8 +222,30 @@ void loop() {
         tipoMovimiento('a');
       }else if(state == 'B'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
         tipoMovimiento('b');
-      }else if(state == 'C'){//Bluetooth activa si Lab 2 encendido -> mueve banda a derecha (arriba)
+      }else if(state == 'C'){//Bluetooth activa el porton de la salida
         simuladorServo();
+      }else if(state == 'E'){//Bluetooth desactiva leds de salida
+        temperatura();
+      }else if(state == '0'){//Bluetooth activa todos los leds
+        manejoLeds(0);
+      }else if(state == '1'){//Bluetooth desactiva todos los leds
+        manejoLeds(1);
+      }else if(state == '2'){//Bluetooth activa leds de lab 1
+        manejoLeds(2);
+      }else if(state == '3'){//Bluetooth desactiva leds de lab 1
+        manejoLeds(3);
+      }else if(state == '4'){//Bluetooth activa leds de lab 2
+        manejoLeds(4);
+      }else if(state == '5'){//Bluetooth desactiva leds de lab 2
+        manejoLeds(5);
+      }else if(state == '6'){//Bluetooth activa leds de entrada
+        manejoLeds(6);
+      }else if(state == '7'){//Bluetooth desactiva leds de entrada
+        manejoLeds(7);
+      }else if(state == '8'){//Bluetooth activa leds de salida
+        manejoLeds(8);
+      }else if(state == '9'){//Bluetooth desactiva leds de salida
+        manejoLeds(9);
       }
 
       /*//Prueba bluetooth
@@ -234,6 +257,65 @@ void loop() {
       }
       */
 
+      break;
+  }
+}
+
+void temperatura(){
+  float val = analogRead(TMP);
+  Serial.println(val);
+  float mv = (val/1000)*5000;
+  float temp = (mv/10)-1;
+
+  Serial.println(temp);
+}
+
+void manejoLeds(int i){
+  switch(i){
+    case 0:
+      digitalWrite(A2, HIGH);//lab1
+      digitalWrite(A3, HIGH);//lab2
+      digitalWrite(A4, HIGH);//entrada
+      digitalWrite(A5, HIGH);//salida
+      break;
+
+    case 1:
+      digitalWrite(A2, LOW);
+      digitalWrite(A3, LOW);
+      digitalWrite(A4, LOW);
+      digitalWrite(A5, LOW);
+      break;
+
+    case 2:
+      digitalWrite(A2, HIGH);//lab1
+      break;
+
+    case 3:
+      digitalWrite(A2, LOW);
+      break;
+
+    case 4:
+      digitalWrite(A3, HIGH);//lab2
+      break;
+
+    case 5:
+      digitalWrite(A3, LOW);
+      break;
+
+    case 6:
+      digitalWrite(A4, HIGH);//entrada
+      break;
+
+    case 7:
+      digitalWrite(A4, LOW);
+      break;
+
+    case 8:
+      digitalWrite(A5, HIGH);//salida
+      break;
+
+    case 9:
+      digitalWrite(A5, LOW);
       break;
   }
 }
