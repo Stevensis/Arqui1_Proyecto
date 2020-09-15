@@ -1,3 +1,6 @@
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
 #include <LiquidCrystal.h>
 #include <Keypad.h>
 #include "ListaEmpleados.h"
@@ -5,6 +8,7 @@
 #include <Servo.h>
 #include <Stepper.h>
 
+//
 #define BT2 19
 #define BT1 18
 //#define MT1 12
@@ -77,13 +81,15 @@ char teclas[4][4] = {{'1', '2', '3', 'U'}, {'4', '5', '6', 'D'}, {'7', '8', '9',
 /**
    Caracteres especiales en lcd
 **/
-byte candado_cerrado[] = {B01110, B10001, B10001, B11111, B11011, B11011, B11111, B00000};
-byte candado_abierto[] = {B01110, B00001, B00001, B11111, B11011, B11011, B11111, B00000};
-byte chequeado[] = {B00000, B00001, B00011, B10110, B11100, B01000, B00000, B00000};
+byte candado_cerrado[8] = {B01110, B10001, B10001, B11111, B11011, B11011, B11111, B00000};
+byte candado_abierto[8] = {B01110, B00001, B00001, B11111, B11011, B11011, B11111, B00000};
+byte chequeado[8] = {B00000, B00001, B00011, B10110, B11100, B01000, B00000, B00000};
 byte caraSonriente[8] = {B00000, B01010, B01010, B01010, B00000, B10001, B01110, B00000};
 
 Keypad mi_teclado = Keypad( makeKeymap(teclas), pinesFilas, pinesColumnas, filas, columnas);
-LiquidCrystal lcd(27, 26, 25, 24, 23, 22); //RS,E,D4,D5,D6,D7
+//LiquidCrystal lcd2(27, 26, 25, 24, 23, 22); //RS,E,D4,D5,D6,D7
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
 
 char obtener_cantidad(int cant) {
   char res;
@@ -142,6 +148,8 @@ void resetear_clave(int clave[]) {
 void setup() {
   Serial.begin(9600);
 
+  lcd.begin(16, 2); //LCD (16 COLUMNAS Y 2 FILAS)
+
   //creando caracteres especiales
   lcd.createChar(0, candado_cerrado);
   lcd.createChar(1, candado_abierto);
@@ -152,8 +160,6 @@ void setup() {
   listado = new lista();
   //listado->agregar(1, 555);
   CURRENT_EMPLOYEE = NULL;
-
-  lcd.begin(16, 2); //LCD (16 COLUMNAS Y 2 FILAS)
 
   //LUCES
   pinMode(A2, OUTPUT); //luces lab 1
@@ -190,7 +196,7 @@ void setup() {
     delay(5000);
   }
 */ 
-opcion_actual = 1;
+opcion_actual = 0;
 }
 
 void loop() {
@@ -206,10 +212,10 @@ void loop() {
 
     case 1:
       mensaje_session();
-      Serial.println("pto el que lo lea jeje");
+      //Serial.println("pto el que lo lea jeje");
       opcion_actual = 2;
       break;
-    
+
     case 2://
       int state=0;
 
@@ -263,11 +269,11 @@ void loop() {
 
 void temperatura(){
   float val = analogRead(TMP);
-  Serial.println(val);
+  //Serial.println(val);
   float mv = (val/1000)*5000;
   float temp = (mv/10)-1;
 
-  Serial.println(temp);
+  Serial.print(temp);
 }
 
 void manejoLeds(int i){
@@ -471,9 +477,9 @@ void mensaje_session() {
 void mensaje_bienvenida() {
   lcd.clear();
   lcd.setCursor(1, 0);
-  lcd.write((byte)0);
+  lcd.write(byte(0));
   lcd.print(" BIENVENIDO ");
-  lcd.write((byte)0);
+  lcd.write(byte(0));
   delay(2000);
 }
 
