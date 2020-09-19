@@ -18,7 +18,12 @@
 //#define SV 13
 #define TMP A0
 
-Stepper ST1(12, 28, 29, 30, 31);
+#define S1 28
+#define S2 29
+#define S3 30
+#define S4 31
+
+//Stepper ST1(12, 28, 29, 30, 31);
 Servo servo;
 
 using namespace std;
@@ -114,7 +119,7 @@ boolean coinciden(int vector_a[], int vector_b[]) {
 
   for (int i = 0; i < 8; i++) {
     if (vector_a[i] != vector_a[i]) {
-      Serial.println("NO IGUAL");
+      //Serial.println("NO IGUAL");
       return false;
     }
   }
@@ -132,10 +137,10 @@ int obtener_info(int vector[]) {
     }
   }
   resultado = atoi(s.c_str());
-  Serial.println("datos vector");
-  Serial.println(s);
-  Serial.println("numero");
-  Serial.println(resultado);
+  //Serial.println("datos vector");
+  //Serial.println(s);
+  //Serial.println("numero");
+  //Serial.println(resultado);
   return resultado;
 }
 
@@ -171,8 +176,8 @@ void setup() {
   pinMode(A9, OUTPUT); //clave correcta led rojo
   pinMode(A10, OUTPUT); //clave correcta led verde nuevo usuario
   pinMode(buzzer, OUTPUT); //buzzer alarma
-  //Serial.println("Terminal de Mensajes");
-  //Serial.println();
+  ////Serial.println("Terminal de Mensajes");
+  ////Serial.println();
 
   //Status lab
   pinMode(LB1, INPUT);
@@ -181,7 +186,11 @@ void setup() {
   //Motores
   servo.attach(13, 1100, 2000);
   servo.write(0);
-  ST1.setSpeed(450);
+  //ST1.setSpeed(450);
+  pinMode(S1,OUTPUT);
+  pinMode(S2,OUTPUT);
+  pinMode(S3,OUTPUT);
+  pinMode(S4,OUTPUT);
 
   //temperatura
   pinMode(TMP, INPUT);
@@ -196,7 +205,7 @@ void setup() {
     delay(5000);
     }
   */
-  opcion_actual = 0;
+  opcion_actual = 1;
 }
 
 void loop() {
@@ -212,7 +221,7 @@ void loop() {
 
     case 1:
       mensaje_session();
-      //Serial.println("pto el que lo lea jeje");
+      ////Serial.println("pto el que lo lea jeje");
       opcion_actual = 2;
       break;
 
@@ -221,7 +230,7 @@ void loop() {
 
       if (Serial.available() > 0) {
         state = Serial.read();
-        //Serial.println(state);
+        ////Serial.println(state);
       }
 
       if (state == 'A') { //Bluetooth activa si Lab 1 encendido -> mueve banda a izquierda (abajo)
@@ -259,7 +268,7 @@ void loop() {
         digitalWrite(A4,HIGH);
         delay(1000);
         digitalWrite(A4,LOW);
-        Serial.println("b");
+        //Serial.println("b");
         }
       */
 
@@ -275,9 +284,9 @@ void temperatura() {
   lcd.print("temperatura");
 
   float val = analogRead(TMP);
-  //Serial.println(val);
-  float mv = (val / 1000) * 5000;
-  float temp = (mv / 10) - 1;
+  ////Serial.println(val);
+  float mv = (val / 1024) * 5000;
+  float temp = (mv / 10);
 
   Serial.print(temp);
 }
@@ -407,7 +416,7 @@ void simuladorServo() {
 
   double primero = millis();
   double segundo = 0;
-  Serial.println("comienza");
+  //Serial.println("comienza");
   while (state != 'D' && segundo < 6) {
     if (Serial.available() > 0) {
       state = Serial.read();
@@ -514,11 +523,71 @@ void tipoMovimiento(char tipo) {
 void moverBanda(int i) {
   if (i == -1) {
     while (digitalRead(LB1) == HIGH) {
-      ST1.step(256 * i);
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,HIGH);
+      delay(200);
+
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,HIGH);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(200);
+
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,HIGH);
+      digitalWrite(S4,LOW);
+      delay(200);
+      
+      digitalWrite(S1,HIGH);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(200);
+      
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(100);
+      
+      //ST1.step(256 * i);
     }
   } else {
     while (digitalRead(LB2) == HIGH) {
-      ST1.step(256 * i);
+      digitalWrite(S1,HIGH);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(200);
+      
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,HIGH);
+      digitalWrite(S4,LOW);
+      delay(200);
+      
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,HIGH);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(200);
+
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,HIGH);
+      delay(200);
+
+      digitalWrite(S1,LOW);
+      digitalWrite(S2,LOW);
+      digitalWrite(S3,LOW);
+      digitalWrite(S4,LOW);
+      delay(100);
+      
+      //ST1.step(256 * i);
     }
   }
 }
@@ -542,7 +611,7 @@ void mensaje_bienvenida() {
 
 void control_de_ingreso() {
   lcd.clear();
-  Serial.println("Pidiendo Usuario");
+  //Serial.println("Pidiendo Usuario");
   indice_clave = 0;
   var_cursor = 0;
   usuario_actual = "";
@@ -550,11 +619,11 @@ void control_de_ingreso() {
   while (ok && !registrando) {
     pedir_usuario(); //en este proceso me puede pedir registrar
   }
-  Serial.println("ESTE ES EL USUARIO");
-  Serial.println(usuario_actual);
-  Serial.println();
+  //Serial.println("ESTE ES EL USUARIO");
+  //Serial.println(usuario_actual);
+  //Serial.println();
   lcd.clear();
-  Serial.println("Pidiendo clave");
+  //Serial.println("Pidiendo clave");
   indice_clave = 0;
   var_cursor = 0;
   ok = true;
@@ -562,9 +631,9 @@ void control_de_ingreso() {
     pedir_password(); //en este proceso me puede pedir registrar
   }
   if (!registrando) {
-    Serial.println("ESTA ES LA CLAVE");
-    Serial.println(clave_actual);
-    Serial.println();
+    //Serial.println("ESTA ES LA CLAVE");
+    //Serial.println(clave_actual);
+    //Serial.println();
     verificar_credenciales();
   }
   registrando = false;
@@ -576,16 +645,16 @@ void pedir_usuario() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         iden_empleado[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -601,7 +670,7 @@ void pedir_usuario() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("PRESIONE 0000");
@@ -611,7 +680,7 @@ void pedir_usuario() {
       lcd.clear();
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER");
+      //Serial.println("ENTER");
       if (iden_empleado[0] == 0 && iden_empleado[1] == 0 && iden_empleado[2] == 0 && iden_empleado[3] == 0 && iden_empleado[4] == -1 && iden_empleado[5] == -1 && iden_empleado[6] == -1 && iden_empleado[7] == -1) {
         registrando = true;
         registrar_usuario();
@@ -620,8 +689,8 @@ void pedir_usuario() {
       }
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         usuario_actual.concat(tecla_presionada);
@@ -630,18 +699,18 @@ void pedir_usuario() {
 
         indice_clave++;
         var_cursor++;
-        //Serial.println("ENTER");
+        ////Serial.println("ENTER");
       }
       else {
-        Serial.println("ERROR ID MUY GRANDE");
+        //Serial.println("ERROR ID MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_id_muy_largo();
           usuario_actual = "";
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
@@ -674,16 +743,16 @@ void pedir_password() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         password[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -700,7 +769,7 @@ void pedir_password() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("PRESIONE 0000");
@@ -710,7 +779,7 @@ void pedir_password() {
       lcd.clear();
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER");
+      //Serial.println("ENTER");
       if (password[0] == 0 && password[1] == 0 && password[2] == 0 && password[3] == 0 && password[4] == -1 && password[5] == -1 && password[6] == -1 && password[7] == -1) {
         registrando = true;
         registrar_usuario();
@@ -719,8 +788,8 @@ void pedir_password() {
       }
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         clave_actual.concat(tecla_presionada);
@@ -729,18 +798,18 @@ void pedir_password() {
 
         indice_clave++;
         var_cursor++;
-        //Serial.println("ENTER");
+        ////Serial.println("ENTER");
       }
       else {
-        Serial.println("ERROR ID MUY GRANDE");
+        //Serial.println("ERROR ID MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_clave_muy_larga();
           clave_actual = "";
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
@@ -771,13 +840,13 @@ void error_clave_muy_larga() {
 void verificar_credenciales() {
   int id = usuario_actual.toInt();
   int clave = clave_actual.toInt();
-  Serial.println("ID USUARIO");
-  Serial.println(id);
-  Serial.println("CLAVE USUARIO");
-  Serial.println(clave);
+  //Serial.println("ID USUARIO");
+  //Serial.println(id);
+  //Serial.println("CLAVE USUARIO");
+  //Serial.println(clave);
   CURRENT_EMPLOYEE = listado->buscar_empleado(id, clave);
   if (CURRENT_EMPLOYEE == NULL) {
-    Serial.println("DATOS INCORRECTOS");
+    //Serial.println("DATOS INCORRECTOS");
     veces++;
     if (veces < 4) {
       lcd.clear();
@@ -817,14 +886,14 @@ void verificar_credenciales() {
     digitalWrite(A5, HIGH);
     delay(2000);
     digitalWrite(buzzer, LOW);
-    Serial.println("CLAVE CORRECTA");
+    //Serial.println("CLAVE CORRECTA");
     opcion_actual = 1;
     ingresando = false;
   }
 }
 
 void registrar_usuario() {
-  Serial.println("REGISTRANDO");
+  //Serial.println("REGISTRANDO");
 
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -842,7 +911,7 @@ void registrar_usuario() {
   }
   indice_clave = 0;
   var_cursor = 0;
-  Serial.println("REINSERTANDO CLAVE");
+  //Serial.println("REINSERTANDO CLAVE");
   lcd.clear();
   ok = true;
   while (ok) {
@@ -850,13 +919,13 @@ void registrar_usuario() {
   }
   indice_clave = 0;
   var_cursor = 0;
-  Serial.println("ESPERANDO CLAVE GERENTE");
+  //Serial.println("ESPERANDO CLAVE GERENTE");
   lcd.clear();
   ok = true;
   while (ok) {
     pedir_clave_gerente();
   }
-  Serial.println("CREANDO EMPLEADO");
+  //Serial.println("CREANDO EMPLEADO");
   int clave = clave_nueva.toInt();
   listado->agregar(id_unico, clave);
   lcd.clear();
@@ -867,12 +936,12 @@ void registrar_usuario() {
   digitalWrite(A10, HIGH);
   delay(1500);
   digitalWrite(A10, LOW);
-  Serial.println("CREADO EXITOSAMENTE");
-  Serial.println();
-  Serial.println("ID USUARIO ");
-  Serial.println(id_unico);
-  Serial.println("CLAVE ");
-  Serial.println(clave);
+  //Serial.println("CREADO EXITOSAMENTE");
+  //Serial.println();
+  //Serial.println("ID USUARIO ");
+  //Serial.println(id_unico);
+  //Serial.println("CLAVE ");
+  //Serial.println(clave);
 }
 
 void pedir_password_nuevo_user() {
@@ -880,16 +949,16 @@ void pedir_password_nuevo_user() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         password_nuevo_usuario[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -904,7 +973,7 @@ void pedir_password_nuevo_user() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("CLAVE MENOR DE 8");
@@ -914,12 +983,12 @@ void pedir_password_nuevo_user() {
       lcd.clear();
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER");
+      //Serial.println("ENTER");
       ok = false;
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         clave_nueva.concat(tecla_presionada);
@@ -927,18 +996,18 @@ void pedir_password_nuevo_user() {
         password_nuevo_usuario[indice_clave] = tecla_presionada;
         indice_clave++;
         var_cursor++;
-        //Serial.println("ENTER");
+        ////Serial.println("ENTER");
       }
       else {
-        Serial.println("ERROR ID MUY GRANDE");
+        //Serial.println("ERROR ID MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_clave_muy_larga_new_user();
           clave_nueva = "";
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
@@ -971,16 +1040,16 @@ void reingresar_clave() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         password_nuevo_usuario_temporal[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -996,7 +1065,7 @@ void reingresar_clave() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
       lcd.clear();
       lcd.setCursor(1, 0);
       lcd.print("CLAVE MENOR DE 8");
@@ -1006,15 +1075,15 @@ void reingresar_clave() {
       lcd.clear();
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER"); //aceptar usuario
+      //Serial.println("ENTER"); //aceptar usuario
       int pass1 = clave_nueva.toInt();
       int pass2 = clave_temp.toInt();
       boolean coincidencia = coinciden(password_nuevo_usuario, password_nuevo_usuario_temporal);
       //if (coincidencia) {
       if (pass1 == pass2) {
-        Serial.println("PASS COINCIDEN");
+        //Serial.println("PASS COINCIDEN");
         clave_usuario_nuevo = obtener_info(password_nuevo_usuario);
-        Serial.println();
+        //Serial.println();
         ok = false;
       }
       else {
@@ -1037,8 +1106,8 @@ void reingresar_clave() {
       }
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         clave_temp.concat(tecla_presionada);
@@ -1048,15 +1117,15 @@ void reingresar_clave() {
         var_cursor++;
       }
       else {
-        Serial.println("ERROR CLAVE MUY GRANDE");
+        //Serial.println("ERROR CLAVE MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_clave_muy_larga_new_user_reingreso();
           clave_temp = "";
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
@@ -1089,16 +1158,16 @@ void pedir_clave_gerente() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         password[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -1111,10 +1180,10 @@ void pedir_clave_gerente() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER");
+      //Serial.println("ENTER");
       if (password[0] == Admin_D1 && password[1] == Admin_D2 && password[2] == Admin_D3 && password[3] == Admin_D4 && password[4] == -1 && password[5] == -1 && password[6] == -1 && password[7] == -1) {
         lcd.clear();
         lcd.setCursor(3, 0);
@@ -1168,25 +1237,25 @@ void pedir_clave_gerente() {
       }
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         tecla_presionada = tecla_presionada - 48;
         password[indice_clave] = tecla_presionada;
         indice_clave++;
         var_cursor++;
-        //Serial.println("ENTER");
+        ////Serial.println("ENTER");
       }
       else {
-        Serial.println("ERROR CLAVE MUY GRANDE");
+        //Serial.println("ERROR CLAVE MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_clave_muy_larga_gerente();
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
@@ -1219,16 +1288,16 @@ void desbloquear() {
   if (tecla_presionada) {
     lcd.setCursor(5 + var_cursor, 1);
     if (tecla_presionada == 'U') {
-      Serial.println("UP");
+      //Serial.println("UP");
     }
     else if (tecla_presionada == 'D') {
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
     }
     else if (tecla_presionada == 'S') {
-      Serial.println("2ND");
+      //Serial.println("2ND");
     }
     else if (tecla_presionada == 'C') {
-      Serial.println("CLEAR");
+      //Serial.println("CLEAR");
       if (var_cursor > 0 && indice_clave > 0) {
         password[indice_clave] = -1;
         lcd.print(' '), lcd.setCursor(5 + var_cursor, 1), lcd.print(' '); //imprimimos el caracter en el lcd
@@ -1241,10 +1310,10 @@ void desbloquear() {
       }
     }
     else if (tecla_presionada == 'H') {
-      Serial.println("HELP");
+      //Serial.println("HELP");
     }
     else if (tecla_presionada == 'E') {
-      Serial.println("ENTER");
+      //Serial.println("ENTER");
       if (password[0] == Admin_D1 && password[1] == Admin_D2 && password[2] == Admin_D3 && password[3] == Admin_D4 && password[4] == -1 && password[5] == -1 && password[6] == -1 && password[7] == -1) {
         lcd.clear();
         lcd.setCursor(3, 0);
@@ -1275,25 +1344,25 @@ void desbloquear() {
       }
     }
     else { //se presiono un numero
-      Serial.print("Tecla: ");
-      Serial.println(tecla_presionada);
+      //Serial.print("Tecla: ");
+      //Serial.println(tecla_presionada);
       if (indice_clave < 8 && var_cursor < 8) {
         lcd.print(tecla_presionada), lcd.setCursor(5 + var_cursor, 1), lcd.print(tecla_presionada); //imprimimos el caracter en el lcd
         tecla_presionada = tecla_presionada - 48;
         password[indice_clave] = tecla_presionada;
         indice_clave++;
         var_cursor++;
-        //Serial.println("ENTER");
+        ////Serial.println("ENTER");
       }
       else {
-        Serial.println("ERROR CLAVE MUY GRANDE");
+        //Serial.println("ERROR CLAVE MUY GRANDE");
         clave_muy_larga = true;
         if (clave_muy_larga) {
           error_clave_muy_larga_gerente();
-          Serial.println("indice actual: ");
-          Serial.println(indice_clave);
-          Serial.println("cursor actual: ");
-          Serial.println(var_cursor);
+          //Serial.println("indice actual: ");
+          //Serial.println(indice_clave);
+          //Serial.println("cursor actual: ");
+          //Serial.println(var_cursor);
           clave_muy_larga = false;
         }
       }
